@@ -1,0 +1,17 @@
+// ==== Margin classes ====
+@for $i from 0 through 50 {
+  @if $i % 5 == 0 {
+    .m#{$i} {
+      margin: #{$i}px;
+    }
+  }
+}
+
+// ==== Font-size classes ====
+@for $i from 10 through 40 {
+  @if $i % 2 == 0 {
+    .s#{$i} {
+      font-size: #{ $i / 10 }vw; // divides by 10 to get rem
+    }
+  }
+}

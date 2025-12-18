@@ -4,7 +4,7 @@ import '../App.css';
 type ExpProps = {
   date: string;
   role: string;
-  description: string[];
+  description: React.ReactNode[];
 }
 
 const ExperiencePoint: React.FC<ExpProps> = ({date, role, description}) => {

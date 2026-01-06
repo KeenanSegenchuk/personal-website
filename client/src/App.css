@@ -1,3 +1,22 @@
+.tab-button {
+  border: none;
+  padding: 10px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  /* shape */
+  border-radius: 12px 12px 0 0;
+  /* layout */
+  margin-right: 6px;
+  /* polish */
+  background-clip: padding-box;
+}
+.tab-button:hover {
+  filter: brightness(1.05);
+}
+.tab-button:active {
+  transform: translateY(1px);
+}
+
 .flexCol {
   display: flex;
   flex-direction: column;
@@ -24,6 +43,26 @@
   }
 }
 
+.experiencePoint {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+/* hide description by default */
+.experiencePoint .description {
+  display: none;
+}
+
+/* hover behavior */
+.experiencePoint:hover {
+  background-color: var(--hover-bg);
+}
+
+.experiencePoint:hover .description {
+  font-size: 1.1em;
+  display: block;
+}
 
 .App-header {
    display: flex; 

@@ -20,7 +20,11 @@ interface AntDefinition {
   startColor: string;     // optional default color of blank cells
 }
 
+
 export abstract class Langston {
+
+	//stores gridworld and updates queued for render
+
 	grid: number[][];
 	storedUpdates: [number, number][] = [];	
 	abstract step():void;
@@ -38,6 +42,9 @@ export abstract class Langston {
 				this.storedUpdates.push([i, j]);
 			});
 		});
+	}
+	clearUpdates():void {
+		this.storedUpdates = [];
 	}
 }
 

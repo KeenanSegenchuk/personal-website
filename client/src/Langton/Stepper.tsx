@@ -1,7 +1,8 @@
 import * as React from "react";
 
 export default class StepController {
-	//StepController takes a nullary function and provides a UI to control iteration
+	//StepController takes a step function and provides a UI to control iteration
+	//Used to control iteration speed in Langton simulations.
 
 	step: () => void;
 	stepSpeed: number = 5; //step frequency in hz
@@ -11,6 +12,7 @@ export default class StepController {
 	toggle: boolean = false;
 	lastTime: number = 0;
 	accumulator: number  = 0;
+	listeners: (() => void)[] = [];
 
 	constructor(step: () => void, defaultSpeed: number) {
 		this.step = step;
@@ -45,35 +47,34 @@ export default class StepController {
 			this.lastTime = performance.now();
 			requestAnimationFrame(this.loop);
 		}
+		this.notify();
 	}
 
-	onIncrement = (buttonText: string):void => {
-		if (buttonText === "+") {
-			this.stepSpeed += this.stepIncrement;
-		} else if (buttonText === "-") {
-			this.stepSpeed -= this.stepIncrement;
-		}
-	}
 	
 	setStepSpeed = (speed: number):void => {
 		this.stepSpeed = speed;
+		this.notify();
 	}
-	setIncrement = (increment: number):void => {
-		this.stepIncrement = increment;
+
+	//listener
+	subscribe(listener: () => void) {
+		this.listeners.push(listener);
 	}
+	notify() {
+		this.listeners.forEach(fn => fn());
+	}
+
+
 
 	//make control bar. Should have a pause/play button and +/- buttons to increase speed. 
 	//Also show stepSpeed labeled hz and an input field to set the increment for the +/- buttons
 	render = ():React.JSX.Element => {
-		const spacing = {width:"5px"};
+		const spacing = { flexGrow: 1, width: "50px", height:"10px" };
 		return (
-			<div style = {{backgroundColor: "#BBCCFF", display: "flex", flexDirection: "row"}}>
+			<div style = {{backgroundColor: "#BBCCFF", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", maxWidth:"100vw"}}>
 				{/*from left to right: play/pause button works by calling onToggle, make -/+ buttons sandwich stepSpeed display, and give the option to set increment in this div*/}
-				<button onClick = {this.onToggle}>{this.toggle ? "PAUSE" : "PLAY"}</button><div style={spacing}/>
-				<button onClick = {() => this.onIncrement("-")}>-</button><div style={spacing}/>
+				<button onClick = {this.onToggle}>{this.toggle ? "PAUSE" : "PLAY"}</button>
 				<label>Speed: <input type="number" onChange={(e) => this.setStepSpeed(Number(e.target.value))} value = {this.stepSpeed}></input></label><div style={spacing}/>
-				<button onClick = {() => this.onIncrement("+")}>+</button><div style={spacing}/>
-				<label>+/- Increment: <input type="number" onChange={(e) => this.setIncrement(Number(e.target.value))} value = {this.stepIncrement}></input></label>
 			</div>
 		);
 	}

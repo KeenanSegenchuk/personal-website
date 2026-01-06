@@ -1,6 +1,9 @@
 import { experience, projects } from "../ExperiencePoints.js";
 import ExperiencePoint from "../../components/ExperiencePoint";
 
+
+const epbgColor = "#eedd66";
+
 const PersonalExperience: React.FC = () => { 
   return (
     <div>
@@ -13,6 +16,8 @@ const PersonalExperience: React.FC = () => {
 				date={e.date}
 				role={e.role}
 				description={e.description}
+				link={e?.link}
+				color={epbgColor}
 			/>
 		))}
 	  </div>
@@ -26,6 +31,8 @@ const PersonalExperience: React.FC = () => {
 				date={e.date}
 				role={e.role}
 				description={e.description}
+				link={e?.link}
+				color={epbgColor}
 			/>
 		))}
 	  </div>

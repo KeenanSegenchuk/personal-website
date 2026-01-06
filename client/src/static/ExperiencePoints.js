@@ -3,14 +3,16 @@ import React from "react";
 type ExperiencePoint = {
   date: string;
   role: string;
+  link: string;
   description: string[];
 }
 function makeExperiencePoint(
   date: string,
   role: string,
   description: string,
+  link?: string,
 ): ExperiencePoint {
-  return {date, role, description};
+  return {date, role, description, link};
 }
 
 
@@ -89,16 +91,16 @@ export const experience = [
 
 const uptonAir: ExperiencePoint = {
 	date: "May 24 - Current",
+	link: "https://upton-air.com/dashboard",
 	role: "Sustainable Upton | Full-Stack Engineer",
 	description: 
 	[
-		<>Built and deployed an air quality monitoring website (upton-air.com) that provides real-time pollution insights to local residents.</>,
-		<>Designed and implemented a React frontend with interactive graphs, a sensor map, and automated email alerts for air quality events.</>,
-		<>Developed a Flask + PostgreSQL backend with REST APIs to store, process, and serve sensor readings efficiently.</>,
-		<>Containerized and deployed the system via Docker Compose on Linux; configured Cloudflare for DNS, caching, and traffic protection.</>,
-		<>Automated uptime monitoring and SMS alerts for critical processes, ensuring high system reliability.</>,
-		<>Collaborated directly with town stakeholders to define use cases, collect feedback, and iterate on usability improvements.</>,
-		<>Assisted users with navigation and data comprehension via OpenAI-based chatbot.</>,
+		<>Built and deployed an <a href="https://upton-air.com/dashboard"> air quality monitoring website</a> for the town of Upton.</>,
+		<>Hosted town-wide data for over a year and built a dahboard to help locals vizualize the air quality patterns.</>,
+		<>Containerized and deployed the system via Docker Compose on Linux and configured Cloudflare for DNS and traffic rules.</>,
+		<>Added public alerts for bad air quality and private ones for system downtime.</>,
+		<>Collaborated directly with concerned citizens to tailor site to their use cases.</>,
+		<>Built LLM-based chatbot to help users navigate the site and ask questions about the data.</>,
 	],
 };
 
@@ -116,8 +118,8 @@ const passingDistanceExtractor = makeExperiencePoint(
 	"Personal Project | Computer-Vision-Based Passing Distance Measurement",
 	[
 		<>Applied pre-trained model and camera geometry library in MATLAB to detect cars and extract their passing distance from rear-facing GoPro footage.</>,
-		<>Created an application for live parameter tuning with vizualization of output data and bounding boxes of detected cars annotated over video frames.</>,
-		<>Made a stereo distance sensing module on an arduino to test system accuracy</>,
+		<>Created an application for live parameter tuning. The app vizualized car boundary boxes and estimated (front-passenger wheel) position to tune and test the algorithms against human estimations.</>,
+		<>Made a stereo distance sensing module on an arduino to test system accuracy. Actual testing still in the TODO phase since I have put off building a vibration-proof mount for it.</>,
 	],
 );
 
@@ -127,8 +129,9 @@ const langtonPlant = makeExperiencePoint(
 	[
 		<>Built a TypeScript viewer for configurable Langton's-Ant-style agents on a grid.</>,
 		<>Will be used to experiment with modeling a "genetically" diverse population in an "social" environment with imposed criteria for survival and reproduction.</>,
-		<>Will be hosted at personal-website.url/langton.</>,
-	]
+		<>Will be hosted at <a href="http://localhost:3000/langton">personal-website.url/langton</a>.</>,
+	],
+	"http://localhost:3000/langton"
 );
 export const projects = [
 	uptonAir,

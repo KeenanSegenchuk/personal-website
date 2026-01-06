@@ -1,0 +1,39 @@
+export default `
+Directions:
+U 0,1 up
+D 0,-1 down
+L -1,0 left
+R 1,0 right
+
+Actions:
+P -3 prevent grow
+G 3 grow
+g 1 vote to grow with 1 energy
+S -1 send resource
+R 1 request resource
+M make energy (from sun and water)
+
+Resources:
+E energy
+S sun
+W water
+
+Operators:
+> greater than
+< less than
+= eq
+& and
+^ or
++ plus
+- minues
+! if
+: then
+x else
+
+Examples:
+!S>3&W>4:M
+!E>4&S>2:G
+
+Model: Fungus
+Each pixel is a cell which functions autonomously, sending resources, growing, and dieing off independantly based on available resources
+`;

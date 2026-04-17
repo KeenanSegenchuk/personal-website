@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m pytest --version)",
+      "Bash(python -m pytest --version)",
+      "Bash(python3 -m pip install pytest pytest-flask -q)",
+      "Bash(python3 -m pip install flask flask-cors openai -q)",
+      "Bash(python3 -m pytest -v)",
+      "Bash(CI=true npm test)",
+      "Bash(CI=true npm test -- --testPathPattern=\"Langton/__tests__\")",
+      "Bash(python3:*)",
+      "Bash(npx tsc:*)",
+      "Bash(CI=true npm test -- --testPathPattern=\"components/__tests__|pages/__tests__\")",
+      "Bash(CI=true npm test -- --testPathPattern=\"Langton/__tests__|components/__tests__|pages/__tests__\")"
+    ]
+  }
+}

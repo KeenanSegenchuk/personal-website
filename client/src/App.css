@@ -65,13 +65,91 @@
 }
 
 .App-header {
-   display: flex; 
+   display: flex;
    justify-content: center;
    align-items: center;
    height: 35px;
    border: 5px solid white;
    background-color: #224466;
    color: white;
+}
+
+/* ===== LangtonPage ===== */
+
+.grid-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.langton-grid-title {
+  margin: 0.6rem 0 0.2rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #b8eef8;
+  letter-spacing: 0.07em;
+  text-shadow: 0 0 16px rgba(80, 210, 255, 0.40);
+  text-transform: uppercase;
+}
+
+.full-height-bg {
+  min-height: 100vh;
+}
+
+.langton-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.2rem 1rem 1.6rem;
+  background: rgba(4, 20, 30, 0.60);
+  backdrop-filter: blur(5px);
+  border-bottom: 1px solid rgba(100, 210, 230, 0.30);
+}
+
+.langton-header h1 {
+  margin: 0;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #b8eef8;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 24px rgba(80, 210, 255, 0.45);
+}
+
+.langton-header .langton-subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.88rem;
+  color: rgba(170, 225, 240, 0.65);
+  letter-spacing: 0.14em;
+  font-style: italic;
+}
+
+.langton-btn {
+  display: block;
+  margin: 1.6rem auto 0;
+  padding: 0.55rem 1.8rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #cff0ff;
+  background: rgba(12, 65, 85, 0.80);
+  border: 2px solid rgba(80, 185, 215, 0.55);
+  border-radius: 999px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+}
+
+.langton-btn:hover:not(:disabled) {
+  background: rgba(18, 95, 125, 0.90);
+  border-color: rgba(120, 220, 250, 0.85);
+  box-shadow: 0 0 14px rgba(80, 210, 245, 0.35);
+  transform: translateY(-2px);
+}
+
+.langton-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.langton-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .App-link {

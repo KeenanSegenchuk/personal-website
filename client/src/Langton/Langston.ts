@@ -1,5 +1,3 @@
-import * as fs from "fs";
-
 type Ant = {
   pos: [number, number];
   dir: [number, number];
@@ -26,59 +24,45 @@ export abstract class Langston {
 	//stores gridworld and updates queued for render
 
 	grid: number[][];
-	storedUpdates: [number, number][] = [];	
+	storedUpdates: Set<string> = new Set();
 	abstract step():void;
 
 	constructor(grid: number[][]) {
 		this.grid = grid;
 		this.initUpdates();
 	}
-	getUpdates = (): [number, number][] => {
-		return this.storedUpdates;
-	}
 	initUpdates():void {
 		this.grid.forEach((row, i) => {
-			row.forEach((cell, j) => {
-				this.storedUpdates.push([i, j]);
+			row.forEach((_cell, j) => {
+				this.pushUpdate([i, j]);
 			});
 		});
 	}
-	clearUpdates():void {
-		this.storedUpdates = [];
+
+	protected pushUpdate(pos: [number, number]):void {
+		this.storedUpdates.add(`${pos[0]},${pos[1]}`);
 	}
-}
 
-export class CustomAnt extends Langston{
-	//langston's ant with different rules
-	ants: Ant[]
-	antDefinitions: AntDefinition[]
-	
-	x: number
-	y: number
-
-	constructor(grid: number[][], antConfig: string) {	
-		super(grid);
-		[this.x, this.y] = [grid.length, grid[0]!.length];
-		this.antDefinitions = [];
-		this.antDefinitions.push(CustomAnt.parseAntDefinition(antConfig));
-		
-		this.ants = [];
-		const init_pos: tuple = [Math.floor(this.x/2), Math.floor(this.y/2)];
-		const init_dir = {"N":[1,0] as tuple, "E":[0,1] as tuple, "S":[-1,0] as tuple, "W":[0,-1] as tuple};
-		this.antDefinitions.forEach((definition) => {
-			this.ants.push({pos: init_pos, dir: init_dir[definition.startDirection]});
+	consumeUpdates():[number, number][] {
+		const res = [...this.storedUpdates].map(k => {
+			const [a, b] = k.split(",").map(Number);
+			return [a, b] as [number, number];
 		});
+		this.storedUpdates = new Set();
+		return res;
 	}
-	
-	static parseAntDefinition(json: string): AntDefinition {
-	  const obj = JSON.parse(json);
-	  if (typeof obj !== "object" || !obj.rules) {
-	    throw new Error("Invalid AntDefinition JSON");
-	  }
-	  return obj as AntDefinition;
+		
+	protected static dtov(dir: "N" | "E" | "S" | "W"): tuple {
+		const dirs: Record<"N" | "E" | "S" | "W", [number, number]> = {
+		  N: [1, 0],
+		  E: [0, 1],
+		  S: [-1, 0],
+		  W: [0, -1],
+		};
+		return dirs[dir];
 	}
 
-	private turnAnt = (dir: number[], turnDir: TurnDirection): tuple => {
+	protected static turnAnt(dir: number[], turnDir: TurnDirection): tuple {
 		if (turnDir === "left") {
 			return [-dir[1], dir[0]];
 		} else if (turnDir === "right") {
@@ -86,7 +70,33 @@ export class CustomAnt extends Langston{
 		} else if (turnDir === "reverse") {
 			return [-dir[0], -dir[1]];
 		}
-		return [0, 0];
+		return [dir[0], dir[1]] as tuple; // straight
+	}
+}
+
+export class CustomAnt extends Langston{
+	//langston's ant with different rules
+	ant: Ant
+	antDefinition: AntDefinition
+	
+	x: number
+	y: number
+
+	constructor(grid: number[][], antConfig: string) {	
+		console.log("CREATING NEW ANTIMUS");
+		super(grid);
+		[this.x, this.y] = [grid.length, grid[0]!.length];
+		this.antDefinition = CustomAnt.parseAntDefinition(antConfig);
+		
+		const init_pos: tuple = [Math.floor(this.x/2), Math.floor(this.y/2)];
+		this.ant = {pos: init_pos, dir: Langston.dtov(this.antDefinition.startDirection)};
+	}
+	
+	static parseAntDefinition(obj: unknown): AntDefinition {
+	  if (typeof obj !== "object" || obj === null || !("rules" in obj)) {
+	    throw new Error("Invalid AntDefinition JSON");
+	  }
+	  return obj as AntDefinition;
 	}
 
 	getUpdates = ():[number, number][] => {
@@ -95,17 +105,17 @@ export class CustomAnt extends Langston{
 
 	//override step to implement JSON-described behavior
 	step = ():void => {
-		this.ants.forEach((ant, index) => {
-			const [x, y] = ant.pos;
-			const definition: AntDefinition = this.antDefinitions[index];
+			const [x, y] = this.ant.pos;
+			const definition: AntDefinition = this.antDefinition;
 			const rule = definition.rules[this.grid[x][y]] ?? definition.defaultRule;
 
 			var [px, py] = [0, 0];
 			if (rule) {
-				ant.dir = this.turnAnt(ant.dir, rule.turn);
+				this.ant.dir = Langston.turnAnt(this.ant.dir, rule.turn);
 				this.grid[x][y] = rule.flipTo;
-			} 
-			const [dx, dy] = ant.dir;
+				this.pushUpdate([x, y]);
+			}
+			const [dx, dy] = this.ant.dir;
 			[px, py] = [x + dx, y + dy];
 			
 			
@@ -114,13 +124,12 @@ export class CustomAnt extends Langston{
 			if (px >= this.x) px -= this.x;
 			if (py < 0) py += this.y;
 			if (py >= this.y) py -= this.y;
-			ant.pos = [px, py];
-		});
+			this.ant.pos = [px, py];
 	}
 }
 
 export class LangstonAnt extends Langston {
-	ants: Ant[]
+	ant: Ant
 	x: number
 	y: number
 
@@ -130,45 +139,38 @@ export class LangstonAnt extends Langston {
 	{
 		super(grid);
 		[this.x, this.y] = [grid.length, grid[0]!.length];
-		this.ants = [];
-		this.storedUpdates = [];
+		this.storedUpdates = new Set();
 		if (this.x%2 === 1 && this.y%2 === 1)
-			this.ants.push({pos: [Math.floor(this.x/2), Math.floor(this.y/2)], dir: [0, 1]});
+			this.ant = {pos: [Math.floor(this.x/2), Math.floor(this.y/2)], dir: [0, 1]};
 		else
-			this.ants.push({pos: [Math.floor(this.x/2), Math.floor(this.y/2)], dir: [0, 1]});
+			this.ant = {pos: [Math.floor(this.x/2), Math.floor(this.y/2)], dir: [0, 1]};
 			//throw new Error("Even-sized grid, cannot place Langston Ant in true center.");
 	}
-	
-	getUpdates = ():[number, number][] => {
-		return this.storedUpdates;
-	}
 
-	step = ():void => {
-		this.ants.forEach((ant) => {	
- 			const [x, y] = ant.pos;
+	step = ():void => {	
+ 			const [x, y] = this.ant.pos;
 			const color = this.grid[x][y];
 
 			//check color			
 			if (color === 1)
 			{	//paint black and turn right if white
-				ant.dir = [ant.dir[1],-ant.dir[0]];
+				this.ant.dir = Langston.turnAnt(this.ant.dir, "right");
 			} else if (color === 0)
 			{	//paint white and turn left if black
-				ant.dir = [0-ant.dir[1],ant.dir[0]];
+				this.ant.dir = Langston.turnAnt(this.ant.dir, "left");
 			}
 
 			//invert square
 			this.grid[x][y] = color === 1 ? 0 : 1;
-			this.storedUpdates.push([x, y]);
+			this.pushUpdate([x, y]);
 
 			//step and wrap edges
-			let [px, py] = [x + ant.dir[0], y + ant.dir[1]];
+			let [px, py] = [x + this.ant.dir[0], y + this.ant.dir[1]];
 			if (px < 0) px += this.x;
 			if (px >= this.x) px -= this.x;
 			if (py < 0) py += this.y;
 			if (py >= this.y) py -= this.y;
-			ant.pos = [px, py];
-		});
+			this.ant.pos = [px, py];
 	}
 }
 

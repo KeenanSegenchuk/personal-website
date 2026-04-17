@@ -1,0 +1,144 @@
+LAYOUT:::
+
+UI stuffs found in Langton/components/
+
+LangtonPage (Langton/components/LangtonPage.tsx):
+	Html layout of the page.
+	Outer wrapper is height:100vh, overflow:hidden, flex-column.
+	Backgrounds (WaveBackground + CloudLeafBackground) are in a position:absolute layer
+	  behind the content — they don't affect layout flow.
+	Header is flex-shrink:0 (fixed height).
+	Body below header is flex:1, overflow:auto — scrolls both X and Y.
+
+GridWrapperGrid (Langton/components/GridWrapperGrid.tsx):
+	Contains a 2D grid of GridWrappers, inited to 1x1.
+	Tracks cells as a 2D array of stable IDs (row-major) so React doesn't remount on resize.
+	Has buttons in the right, left, top, bottom margins to add/remove rows and columns.
+	No internal scroll — the LangtonPage body handles all scrolling.
+
+GridWrapper (Langton/components/GridWrapper.tsx):
+	Wraps a single LangstonGrid instance with its controllers.
+	Owns GridContext, AntTypeController, PromptController, and cooldown state.
+	init() is async: fetches ant config from server for "random" type before constructing
+	  LangstonGrid. Reads promptController.prompt and ctx.get("nColors") at fetch time.
+	Renders ControllerWrapper only when state is "ready".
+	ControllerWrapper (bottom of same file):
+		Subscribes to all controllers; calls forceUpdate() on any change.
+		Renders StepController, then AntTypeController + PromptController side-by-side,
+		then the "Generate New Ant" button.
+
+
+
+CONTROL:::
+
+Controllers live in Langton/controllers/.
+
+
+--- GridContext (GridContext.ts) ---
+
+Shared observable state owned by GridWrapper, injected into every controller
+at construction time. Provides typed get/set with per-key and global subscriptions.
+
+	GridState fields:
+		antType: AntType    — current ant type; written by AntTypeController
+		nColors: number     — number of colors; read by GridWrapper for API call
+
+	API:
+		ctx.get("antType")               → current value
+		ctx.set("antType", "random")     → updates + fires key listeners + global listeners
+		ctx.subscribeKey("antType", fn)  → fn called only when antType changes; returns unsub
+		ctx.subscribe(fn)                → fn called on any key change; returns unsub
+
+	To add a new shared field: add it to GridState in GridContext.ts. That's it.
+
+
+--- Controller pattern ---
+
+Each controller is a plain class (no React component). It:
+  - Owns its own private listeners: Set<() => void>
+  - Exposes subscribe(fn) / notify() / unsubscribeAll()
+  - Receives GridContext in its constructor if it needs shared state
+  - Implements render(): React.JSX.Element | null
+  - Optionally calls ctx.subscribeKey(...) in its constructor to react to context changes
+
+ControllerWrapper (in GridWrapper.tsx) subscribes to each controller's subscribe()
+and calls forceUpdate() so the class-based render() is called on every change.
+
+
+--- Existing controllers ---
+
+StepController (StepController.tsx):
+	Animation loop. Pauses/plays simulation, controls step speed.
+	Does not use GridContext.
+
+AntTypeController (AntTypeController.tsx):
+	Renders a <select> for ant type.
+	On change: updates this.antType AND calls ctx.set("antType", type).
+	GridContext is optional (pass nothing for isolated use, e.g. tests).
+
+PromptController (PromptController.tsx):
+	Renders a <textarea> for the generation prompt.
+	Constructor: subscribes to ctx "antType" key → calls this.notify() on change,
+	  causing ControllerWrapper to re-render and call render() again.
+	render(): returns null when ctx.get("antType") === "ant" (hidden for classic ant).
+	GridWrapper reads promptController.prompt directly in init() — no submit event needed.
+
+
+--- Adding a new controller ---
+
+1. Create Langton/controllers/YourController.tsx
+2. Follow this stub:
+
+	import * as React from "react";
+	import GridContext from "./GridContext";
+
+	export default class YourController {
+	  // Your state fields here
+	  someValue: number = 0;
+
+	  private listeners: Set<() => void> = new Set();
+	  private ctxUnsub?: () => void;
+
+	  constructor(private ctx: GridContext) {
+	    // Subscribe to a context key if your render depends on shared state.
+	    // Remove if not needed.
+	    this.ctxUnsub = ctx.subscribeKey("antType", () => this.notify());
+	  }
+
+	  // Mutate state and notify ControllerWrapper to re-render.
+	  setSomeValue = (v: number): void => {
+	    this.someValue = v;
+	    // If this changes shared state others depend on:
+	    // this.ctx.set("someSharedKey", v);
+	    this.notify();
+	  };
+
+	  subscribe(listener: () => void): () => void {
+	    this.listeners.add(listener);
+	    return () => { this.listeners.delete(listener); };
+	  }
+
+	  notify(): void {
+	    for (const fn of this.listeners) fn();
+	  }
+
+	  unsubscribeAll(): void {
+	    this.listeners.clear();
+	    this.ctxUnsub?.();
+	  }
+
+	  render = (): React.JSX.Element | null => {
+	    // Return null to hide (e.g. based on ctx.get("antType")).
+	    return (
+	      <div>
+	        {/* your UI */}
+	      </div>
+	    );
+	  };
+	}
+
+3. In GridWrapper.tsx:
+	- Add to GridContext state if you need new shared fields (GridContext.ts → GridState)
+	- const [yourController] = useState(() => new YourController(ctx));
+	- Pass to ControllerWrapper as a prop
+	- In ControllerWrapper: subscribe + unsubscribe in the useEffect, call render() in JSX

@@ -1,12 +1,16 @@
 import '../../App.scss';
 
-const Bio: React.FC = () => {
+type BioProps = {
+  setState: ((value: string) => void) | null;
+};
+
+const Bio: React.FC<BioProps> = ({setState}) => {
   return (
     <div>
       <center><h1 className="s40 m10">About Me</h1></center>
       <p></p>
       <div className="flexRow">
-	<img src="/pics/me/image000000.JPG" alt="Image not loading..."
+	<img src="/pics/me/image000000.JPG" alt="Loading..."
 		style={{width:"40%",height:"auto"}} 
 	/>
 	<div>
@@ -24,19 +28,23 @@ const Bio: React.FC = () => {
 			<br/>
 			Mathematics (modeling systems, discrete proofs)
 			<br/>
-			Biochemistry (nucleic acids, genomics)
+			Biochemistry 
 		</p>
 		<h1 className="m10 s20">
 			Hobbies:
 		</h1>
 		<p className="m10 s18">
-			Fishing
+			{setState !== null ?
+				<a href="#" onClick={() => {setState("Outdoors");}}>The Wildlife</a>
+			:<>The Wildlife</>}
 			<br/>
 			Bike Racing (Cyclocross, Mountain Bike)
 			<br/>
-			ESports (Counter Strike, Overwatch)
+			{setState !== null ?
+				<a href="#" onClick={() => {setState("Gaming");}}>EGaming (Counter Strike, Overwatch)</a>
+			:<>EGaming (Counter Strike, Overwatch)</>}
 			<br/>
-			Karate (Kwanmukan)
+			Karate 
 		</p>
 	</div>
       </div>

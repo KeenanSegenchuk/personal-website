@@ -6,17 +6,24 @@ export default function Renderer({ render, width, height }: { render: (ctx: Canv
 
   useEffect(() => {
     let animationFrameId: number;
+    let active = true;
+
     const loop = () => {
-      //setTick((t) => t + 1); // force a React re-render
+      if (!active) return;
+      
       const ctx = canvasRef?.current?.getContext("2d");
       if(ctx) {	
-	render(ctx);
+	console.log("Rendering Canvas...");
+	render(ctx); 
       }
       animationFrameId = requestAnimationFrame(loop);
     };
 
     animationFrameId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(animationFrameId);
+    return () => {
+	active = false;
+	cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
 

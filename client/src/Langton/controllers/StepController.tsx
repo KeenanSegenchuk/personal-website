@@ -8,17 +8,19 @@ export default class StepController {
 	stepSpeed: number = 5; //step frequency in hz
 	stepNum: number = 0; //step count
 	stepIncrement: number = 5; //value to increment by when using +/- buttons
-  	
+
 	toggle: boolean = false;
 	lastTime: number = 0;
 	accumulator: number  = 0;
-	listeners: (() => void)[] = [];
+	private rafID: number | null = null;
+	private listeners: Set<() => void> = new Set<() => void>();
+	renderCallback: (() => void) | null = null;
 
 	constructor(step: () => void, defaultSpeed: number) {
 		this.step = step;
 		this.stepSpeed = defaultSpeed;
 	}
-	
+
 	//loop through step at stepSpeed hz
 	loop = (time: number):void => {
 		if (!this.toggle) return;
@@ -29,13 +31,17 @@ export default class StepController {
 		this.accumulator += delta;
 		const stepInterval = 1/ this.stepSpeed;
 
+		const oldStepNum = this.stepNum;
+
 		while (this.accumulator >= stepInterval) {
 			this.step();
 			this.stepNum++;
 			this.accumulator -= stepInterval;
 		}
 
-		requestAnimationFrame(this.loop);
+		if(this.stepNum - oldStepNum !== 0)	console.log(`Calling back to render ${this.stepNum - oldStepNum} updates`);
+		this.renderCallback?.();
+		this.rafID = requestAnimationFrame(this.loop);
 	}
 
 	onToggle = ():void => {
@@ -50,7 +56,14 @@ export default class StepController {
 		this.notify();
 	}
 
-	
+	stop():void {
+		this.toggle = false;
+		if (this.rafID !== null) {
+			cancelAnimationFrame(this.rafID);
+			this.rafID = null;
+		}
+	}
+
 	setStepSpeed = (speed: number):void => {
 		this.stepSpeed = speed;
 		this.notify();
@@ -58,15 +71,18 @@ export default class StepController {
 
 	//listener
 	subscribe(listener: () => void) {
-		this.listeners.push(listener);
+		this.listeners.add(listener);
+		return () => {this.listeners.delete(listener);}
 	}
 	notify() {
-		this.listeners.forEach(fn => fn());
+		for (const fn of this.listeners) {fn();}
+	}
+	unsubscribeAll() {
+		this.listeners.clear();
 	}
 
 
-
-	//make control bar. Should have a pause/play button and +/- buttons to increase speed. 
+	//make control bar. Should have a pause/play button and +/- buttons to increase speed.
 	//Also show stepSpeed labeled hz and an input field to set the increment for the +/- buttons
 	render = ():React.JSX.Element => {
 		const spacing = { flexGrow: 1, width: "50px", height:"10px" };

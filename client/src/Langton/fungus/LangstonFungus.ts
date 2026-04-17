@@ -1,4 +1,4 @@
-import { Langston } from "./Langston";
+import { Langston } from "../Langston";
 //import decode from "./Decoder/Decoder";
 
 type ResourceBundle = {

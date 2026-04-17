@@ -25,40 +25,47 @@ const WaveBackground: React.FC<WaveBackgroundProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const draw = () => {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    const width = canvas.offsetWidth;
-    const height = canvas.offsetHeight;
+      const width = canvas.offsetWidth;
+      const height = canvas.offsetHeight;
+      canvas.width = width;
+      canvas.height = height;
 
-    canvas.width = width;
-    canvas.height = height;
+      // ---------- Seeded RNG ----------
+      const rng = mulberry32(seed);
 
-    // ---------- Seeded RNG ----------
-    const rng = mulberry32(seed);
+      // ---------- Background ----------
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, width, height);
 
-    // ---------- Background ----------
-    ctx.fillStyle = backgroundColor;
-    ctx.fillRect(0, 0, width, height);
+      // ---------- Wave placement ----------
+      const spacing = 100 / density; // vertical spacing between waves
+      const jitter = spacing * 0.5;
 
-    // ---------- Wave placement ----------
-    const spacing = 100 / density; // vertical spacing between waves
-    const jitter = spacing * 0.5;
+      for (let y = spacing / 2; y < height; y += spacing) {
+        if (rng() < 0.1) continue; // randomly skip some waves
 
-    for (let y = spacing / 2; y < height; y += spacing) {
-      if (rng() < 0.1) continue; // randomly skip some waves
+        const py = y + randRange(-jitter, jitter, rng);
+        const amplitude = randRange(10, 40, rng); // wave height
+        const wavelength = randRange(80, 200, rng); // wave width
+        const rand = rng();
+        const color = waveColors[Math.floor(rand * waveColors.length)];
+        const lineColor = lineColors[Math.floor(rand * lineColors.length)];
 
-      const py = y + randRange(-jitter, jitter, rng);
-      const amplitude = randRange(10, 40, rng); // wave height
-      const wavelength = randRange(80, 200, rng); // wave width
-      const rand = rng();
-      const color = waveColors[Math.floor(rand * waveColors.length)];
-      const lineColor = lineColors[Math.floor(rand * lineColors.length)];
+        drawWave(ctx, width, py, amplitude, wavelength, color);
+        drawWaveLine(ctx, width, py, amplitude, wavelength, lineColor);
+      }
+    };
 
-      drawWave(ctx, width, py, amplitude, wavelength, color);
-      drawWaveLine(ctx, width, py, amplitude, wavelength, lineColor);
-    }
-  }, [backgroundColor, waveColors, seed, density]);
+    draw();
+
+    const ro = new ResizeObserver(draw);
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, [backgroundColor, waveColors, lineColors, seed, density]);
 
   return (
     <div
@@ -134,7 +141,7 @@ function drawWaveLine(
   }
 
   ctx.strokeStyle = lineColor;
-  ctx.lineWidth = 2; 
+  ctx.lineWidth = 2;
   ctx.stroke();
 
   ctx.restore();

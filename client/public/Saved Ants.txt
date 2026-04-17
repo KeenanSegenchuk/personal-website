@@ -1,0 +1,10 @@
+Beamer: {
+  "defaultRule": { "turn": "straight", "flipTo": 0 },
+  "rules": {
+    "0": { "turn": "right", "flipTo": 1 },
+    "1": { "turn": "right", "flipTo": 2 },
+    "2": { "turn": "left", "flipTo": 0 }
+  },
+  "startDirection": "N",
+  "startColor": 0
+}

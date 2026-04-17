@@ -1,0 +1,10 @@
+Langston:
+	Abstract parent class of all Langston creatures.
+	Subclasses will inplement step() and performs creature logic to interact with the grid.
+	step() must log updates in parent using super.pushUpdates([x, y]);
+	Contains some useful static fns:
+		dotv("N" | "E" | "W" | "S"): number[2] //Direction to Vector
+		turnAnt(number[2], "left" | "right" | "straight" | "reverse"): number[2]  //turns Vector toward Direction
+		
+CustomAnt:
+	Fetches random AntConfig from chatGPT

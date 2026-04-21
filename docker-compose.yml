@@ -6,8 +6,10 @@ services:
       target: flask-server
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    ports:
-      - "5000:4000"  # Expose port 5000 to the host
+    expose:
+      - "4000"
+    networks:
+      - default
     depends_on:
       pgdb:
         condition: service_healthy
@@ -21,8 +23,8 @@ services:
       - POSTGRES_DB=postgres
     volumes:
       - data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    expose:
+      - "4000"
 
   nginx:
     build:
@@ -38,7 +40,7 @@ services:
     depends_on:
       - server  # Ensures Flask is up before Nginx
     environment:
-      - URL = ${URL}
+      - URL=${URL}
     volumes:
       - ./cert.pem:/etc/nginx/cert.pem:ro #https certificate / private key
       - ./key.pem:/etc/nginx/key.pem:ro #public key

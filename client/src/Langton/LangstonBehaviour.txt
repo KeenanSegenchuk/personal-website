@@ -8,3 +8,8 @@ Langston:
 		
 CustomAnt:
 	Fetches random AntConfig from chatGPT
+
+LangstonPlant:
+	Has resources & environmental factors.
+	Performs actions based on the color of the tiles. 
+	Sets tile color accoring to logic created by LLM in config.
